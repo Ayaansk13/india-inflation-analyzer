@@ -1,5 +1,9 @@
 # 🇮🇳 India Inflation Impact Analyzer & Personal Cost Predictor
 
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/deploy?repository=Ayaansk13/india-inflation-analyzer&branch=main&mainModule=app.py)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-0F766E.svg)](https://www.python.org/)
+[![Streamlit App](https://img.shields.io/badge/Streamlit-FF4B4B?logo=streamlit&logoColor=white)](https://share.streamlit.io/deploy?repository=Ayaansk13/india-inflation-analyzer&branch=main&mainModule=app.py)
+
 > **A Machine Learning + Data Science Final Year Project**  
 > **BK Birla College of Arts, Science & Commerce (Autonomous), Kalyan**  
 > **Department of Information Technology & Data Science**  
