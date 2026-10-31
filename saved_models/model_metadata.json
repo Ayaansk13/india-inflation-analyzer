@@ -1,0 +1,226 @@
+{
+  "model_name": "XGBoost Inflation Regressor",
+  "trained_date": "2026-10-31 16:42:52",
+  "hyperparameters": {
+    "n_estimators": 150,
+    "max_depth": 4,
+    "learning_rate": 0.05,
+    "subsample": 0.85,
+    "colsample_bytree": 0.85,
+    "random_state": 42,
+    "n_jobs": -1
+  },
+  "feature_columns": [
+    "month",
+    "quarter",
+    "sin_month",
+    "cos_month",
+    "cpi_mom_change",
+    "crude_yoy",
+    "gold_yoy",
+    "food_fuel_spread",
+    "repo_rate",
+    "usd_inr",
+    "cpi_general_yoy_lag1",
+    "cpi_general_yoy_lag2",
+    "cpi_general_yoy_lag3",
+    "cpi_general_yoy_lag6",
+    "cpi_general_yoy_lag12",
+    "cpi_food_yoy_lag1",
+    "cpi_food_yoy_lag2",
+    "cpi_food_yoy_lag3",
+    "wpi_yoy_lag1",
+    "wpi_yoy_lag2",
+    "crude_lag1",
+    "crude_lag2",
+    "cpi_yoy_rolling_mean_3m",
+    "cpi_yoy_rolling_mean_6m",
+    "cpi_yoy_rolling_mean_12m",
+    "cpi_yoy_rolling_std_6m"
+  ],
+  "train_samples": 94,
+  "test_samples": 24,
+  "test_metrics": {
+    "rmse": 0.1834,
+    "mae": 0.1481,
+    "mape": 2.75,
+    "r2": 0.9648,
+    "max_error": 0.3647,
+    "mse": 0.0336
+  },
+  "train_metrics": {
+    "rmse": 0.0138,
+    "mae": 0.0089,
+    "mape": 0.21,
+    "r2": 0.9999,
+    "max_error": 0.0847,
+    "mse": 0.0002
+  },
+  "cv_mean_rmse": 0.569,
+  "cv_mean_r2": -0.1649,
+  "residual_diagnostics": {
+    "mean_residual": -0.0059,
+    "std_residual": 0.1833,
+    "durbin_watson": 1.728,
+    "residual_skew": 0.159,
+    "sample_size": 24
+  },
+  "benchmark_comparison": {
+    "XGBoost": {
+      "rmse": 0.1834,
+      "mae": 0.1481,
+      "mape": 2.75,
+      "r2": 0.9648,
+      "max_error": 0.3647,
+      "mse": 0.0336
+    },
+    "RandomForest": {
+      "rmse": 0.1018,
+      "mae": 0.0786,
+      "mape": 1.53,
+      "r2": 0.9892,
+      "max_error": 0.2245,
+      "mse": 0.0104
+    },
+    "RidgeRegression": {
+      "rmse": 1.3071,
+      "mae": 1.0556,
+      "mape": 21.87,
+      "r2": -0.7883,
+      "max_error": 2.5795,
+      "mse": 1.7086
+    }
+  },
+  "feature_ranking": [
+    {
+      "feature": "cpi_yoy_rolling_mean_3m",
+      "importance": 0.7066
+    },
+    {
+      "feature": "cpi_mom_change",
+      "importance": 0.0956
+    },
+    {
+      "feature": "usd_inr",
+      "importance": 0.0822
+    },
+    {
+      "feature": "cpi_general_yoy_lag1",
+      "importance": 0.0272
+    },
+    {
+      "feature": "repo_rate",
+      "importance": 0.0199
+    },
+    {
+      "feature": "cpi_general_yoy_lag2",
+      "importance": 0.0196
+    },
+    {
+      "feature": "crude_lag1",
+      "importance": 0.0156
+    },
+    {
+      "feature": "food_fuel_spread",
+      "importance": 0.0105
+    },
+    {
+      "feature": "cpi_general_yoy_lag6",
+      "importance": 0.0056
+    },
+    {
+      "feature": "sin_month",
+      "importance": 0.0024
+    },
+    {
+      "feature": "wpi_yoy_lag1",
+      "importance": 0.0024
+    },
+    {
+      "feature": "month",
+      "importance": 0.0018
+    },
+    {
+      "feature": "cos_month",
+      "importance": 0.0018
+    },
+    {
+      "feature": "quarter",
+      "importance": 0.0013
+    },
+    {
+      "feature": "crude_lag2",
+      "importance": 0.0013
+    },
+    {
+      "feature": "wpi_yoy_lag2",
+      "importance": 0.0012
+    },
+    {
+      "feature": "cpi_food_yoy_lag1",
+      "importance": 0.0011
+    },
+    {
+      "feature": "crude_yoy",
+      "importance": 0.0009
+    },
+    {
+      "feature": "cpi_general_yoy_lag12",
+      "importance": 0.0008
+    },
+    {
+      "feature": "cpi_general_yoy_lag3",
+      "importance": 0.0005
+    },
+    {
+      "feature": "cpi_food_yoy_lag2",
+      "importance": 0.0005
+    },
+    {
+      "feature": "gold_yoy",
+      "importance": 0.0003
+    },
+    {
+      "feature": "cpi_yoy_rolling_mean_12m",
+      "importance": 0.0003
+    },
+    {
+      "feature": "cpi_yoy_rolling_mean_6m",
+      "importance": 0.0002
+    },
+    {
+      "feature": "cpi_food_yoy_lag3",
+      "importance": 0.0001
+    },
+    {
+      "feature": "cpi_yoy_rolling_std_6m",
+      "importance": 0.0001
+    }
+  ],
+  "learning_curve": [
+    {
+      "sample_size": 23,
+      "fraction": 0.25,
+      "train_rmse": 0.0071,
+      "val_rmse": 1.4044
+    },
+    {
+      "sample_size": 47,
+      "fraction": 0.5,
+      "train_rmse": 0.012,
+      "val_rmse": 0.7124
+    },
+    {
+      "sample_size": 70,
+      "fraction": 0.75,
+      "train_rmse": 0.0173,
+      "val_rmse": 0.2344
+    },
+    {
+      "sample_size": 94,
+      "fraction": 1.0,
+      "train_rmse": 0.0138,
+      "val_rmse": 0.1834
+    }
+  ]
+}

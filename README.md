@@ -1,435 +1,265 @@
-# Parivar Arth (परिवार अर्थ)
-### Multi-User, ML-Powered Personal Finance & Inflation Planner for Indian Households
+# Parivar-Arth: India Inflation Impact Analyzer & Personal Cost Predictor
 
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-0F766E.svg)](https://www.python.org/)
-[![Streamlit 1.30+](https://img.shields.io/badge/streamlit-1.30+-F59E0B.svg)](https://streamlit.io/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-0B1F3A.svg)](LICENSE)
-[![Tests Passing](https://img.shields.io/badge/tests-29%2F29%20passed-16A34A.svg)](tests/)
+[![Python Version](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13%20%7C%203.14-blue.svg)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg)](LICENSE)
+[![Streamlit](https://img.shields.io/badge/Framework-Streamlit%201.66-red.svg)](https://streamlit.io/)
+[![Model: XGBoost](https://img.shields.io/badge/ML%20Engine-XGBoost%20Regressor-orange.svg)](https://xgboost.readthedocs.io/)
+[![Theme](https://img.shields.io/badge/Design-Bloomberg%20%2F%20FinTech%20Dark-182234.svg)](#uiux-design)
 
----
-
-## 📌 Executive Summary
-
-Prices in India keep rising, but family budgets do not adjust in time. Grocery bills climb during monsoon shocks, private school admissions jump 8–10% annually, elderly parents' prescription costs creep upwards, and floating home loan EMIs rise whenever the Reserve Bank of India (RBI) hikes the repo rate.
-
-**Parivar Arth** (*"Family Money"* in Hindi) bridges this gap. It is a production-quality, multi-user personal finance platform specifically engineered for Indian households (salaried professionals, gig workers, small business owners, and joint families). 
-
-**The Core Idea**: *The inflation forecast is the engine; personal planning is the product.* 
-Rather than applying generic headline inflation or today's static prices, Parivar Arth forecasts category-wise CPI inflation (Food, Education, Health, Housing, Transport, Fuel) using machine learning, and applies those compounded rates to each family's saved finances to predict future costs, exact shortfall months, and actionable expense reduction levers well in advance.
+> **Final-Year B.Sc. Data Science Capstone Project & Enterprise Financial Analytics Platform**  
+> Calibrated to the official **Ministry of Statistics & Programme Implementation (MoSPI)** All-India Consumer Price Index (Base Year 2012=100) and the **Reserve Bank of India (RBI)** Monetary Policy Framework.
 
 ---
 
-## 🏛️ System Architecture
+## 1. Executive Summary & Problem Statement
+
+In emerging economies such as India, the headline **Consumer Price Index (CPI)** published monthly by MoSPI measures the nationwide average price movement across a fixed aggregate consumption basket. While this index serves macroeconomic policymakers and central banks well, **it frequently diverges from the actual financial reality of individual households**.
+
+### The Micro-Macro Divergence
+1. **Aggregated Basket Distortion:** While the official All-India CPI assigns a massive **45.86% weight to Food & Beverages**, an urban middle-class household often spends only 20-28% on groceries, but allocates 30-40% to rent, children's tuition fees, and mobility.
+2. **Asymmetric Category Shocks:** Episodic weather anomalies (monsoon deficits, heatwaves) cause perishable vegetable prices (tomatoes, onions) to experience 40-70% localized surges, creating immediate monthly deficits.
+3. **Absence of Predictive Personal Tools:** Consumers lack proactive estimators to foresee how impending macroeconomic shocks (e.g., Brent crude surges or food supply disruptions) will specifically impact their distinct monthly budget.
+
+**Parivar-Arth** addresses this gap by combining historical data engineering, time-series econometrics, machine learning forecasting (XGBoost), and a personal budget simulator to calculate an exact **Personal Inflation Rate**, projected future expenditure trajectories, and non-static category-driven savings strategies.
+
+---
+
+## 2. Key Features
+
+- **Executive Analytics Dashboard:** Real-time KPI summary tracking current headline CPI, out-of-sample XGBoost next-month forecasts, wholesale-to-retail transmission (WPI vs. CPI), and the RBI statutory tolerance corridor (4.0% +/- 2.0%).
+- **Multi-Sector Economic Indicators:** In-depth breakdown across all 6 primary MoSPI basket groups, Wholesale Price Index (WPI), Brent crude oil ($/bbl), MCX gold (INR/10g), USD/INR foreign exchange, and the RBI repo rate.
+- **Enterprise Data Explorer:** Filterable, searchable, and sortable multi-parameter dataset viewer with date range filtering, statistical summaries, missing value audit trails, and one-click CSV/JSON export.
+- **Multi-Horizon Econometric Forecasting:** Recursive direct forward forecasting for **1-Month, 3-Month, and 6-Month** horizons with 95% confidence intervals based on residual variance propagation.
+- **What-If Scenario Stress Testing:** Simulate geopolitical crude oil shocks (+25%), monsoon deficits (+15% food shock), and hawkish RBI tightening (+50 bps) against the baseline economic trajectory.
+- **Personal Cost Predictor:** Granular 10-category household expense simulator (Food, Fuel, Transport, Rent, Healthcare, Education, Utilities, Entertainment, Shopping, Other) computing personalized weighted inflation vs. national benchmarks.
+- **Dynamic Savings Recommendation Engine:** Algorithmic financial strategies conditioned on the household's primary inflation driver (APMC wholesale procurement, seasonal crop substitution, multimodal transit passes, BLDC energy audits, Jan Aushadhi generic substitution).
+- **Model Performance & Residual Diagnostics:** Dedicated econometric validation page featuring Test RMSE, MAE, MAPE, R² score, Durbin-Watson autocorrelation tests, actual vs. predicted overlays, residual plots, and interactive on-the-fly hyperparameter retraining.
+- **Automated Publication-Grade PDF Reports:** Built with ReportLab to generate confidential executive dossiers containing client expense breakdowns, projected escalations, forecast matrices, and model audit certificates.
+
+---
+
+## 3. System Architecture
 
 ```mermaid
 flowchart TD
-    subgraph DataEngine["1. ML Data & Forecasting Engine"]
-        MOSPI["MoSPI Official CPI Groups<br/>(Food, Health, Educ, Rent, Fuel)"]
-        MACRO["Macro & Financial Drivers<br/>(Brent Crude, USD/INR, RBI Repo)"]
-        CV["Walk-Forward Time-Series Split<br/>(Zero Lookahead Leakage)"]
-        MODELS["Model Benchmark & Selection<br/>(SARIMA vs Random Forest vs XGBoost)"]
-        FORECASTS["24-Month Category Trajectories<br/>+ 95% Confidence Intervals"]
-        MOSPI --> CV
-        MACRO --> CV
-        CV --> MODELS
-        MODELS --> FORECASTS
+    subgraph Data_Layer ["1. Data Acquisition & Storage"]
+        MoSPI["MoSPI All-India CPI (Base 2012=100)"]
+        WPI["DPIIT Wholesale Price Index (2011-12=100)"]
+        Commodities["Brent Crude + MCX Gold + USD/INR"]
+        RBI["RBI Policy Repo Rate"]
+        ETL["ETL Pipeline & Data Validator"]
+        DB[("SQLite Database: inflation_data.db")]
+        MoSPI --> ETL
+        WPI --> ETL
+        Commodities --> ETL
+        RBI --> ETL
+        ETL --> DB
     end
 
-    subgraph CorePlatform["2. Secure Multi-Tenant Core"]
-        AUTH["Auth & Security Engine<br/>(bcrypt, 5-Attempt Lockout, 20-min Timeout)"]
-        DB[(SQLAlchemy ORM<br/>SQLite WAL / PostgreSQL)]
-        VERSIONING["Temporal Versioning Engine<br/>(effective_from / effective_to)"]
-        AUTH <--> DB
-        VERSIONING <--> DB
+    subgraph Feature_Layer ["2. Feature Engineering"]
+        DB --> FE["Feature Matrix Builder"]
+        FE --> Lags["Econometric Lags: t-1, t-2, t-3, t-6, t-12"]
+        FE --> Rolling["Rolling Statistics: 3M, 6M, 12M Mean & Std"]
+        FE --> Seasonal["Cyclical Harmonics: Sin/Cos Month"]
+        FE --> Spreads["Cross-Asset Differentials & Growth Rates"]
     end
 
-    subgraph PlanningEngine["3. Household Planning Services"]
-        PROFILE["Mandatory Household Profile<br/>(Earners, Dependents, Housing, Loans)"]
-        SHORTFALL["Shortfall Predictor & Gap Timeline<br/>(Income vs Essential Compound Cost)"]
-        MONTECARLO["1,000-Run Monte Carlo Simulation<br/>(Probabilistic Cash-Flow Failure)"]
-        LEVERS["'Reduce Necessary Expenses' Engine<br/>(Rent, Slabs, Fuel, Groceries, OTT)"]
-        DEBT["Debt Avalanche & Repo Rate Sensitivity<br/>(DTI Ratio, Floating EMI Shocks)"]
-        EMERGENCY["Dynamic Emergency Runway<br/>(3 vs 6 Months, Liquid Asset Filter)"]
-        SINKING["12-Month Sinking Fund & Calendar<br/>(School Fees, Diwal/Eid, Premiums)"]
+    subgraph ML_Layer ["3. Econometric Machine Learning"]
+        Lags & Rolling & Seasonal & Spreads --> Model["XGBoost Regressor"]
+        Model --> Split["Chronological Train/Test Partition (80/20)"]
+        Model --> CV["TimeSeriesSplit 5-Fold Cross Validation"]
+        Model --> Benchmarks["Benchmark Models: Random Forest & Ridge"]
+        Model --> Persist["Model Persistence: saved_models/xgboost_cpi_model.joblib"]
     end
 
-    subgraph Delivery["4. Delivery & Interfaces"]
-        UI["Streamlit Multipage App<br/>(Mobile-First, Centered, Indian Warmth Theme)"]
-        REPORTS["Export Engine<br/>(Executive PDF via fpdf2 + Excel via openpyxl)"]
-        CHAT["Parivar AI Assistant<br/>(Local App Tool Calling + Offline FAQ Fallback)"]
-        ADMIN["Admin Telemetry Dashboard<br/>(System Metrics, Zero Data Leakage)"]
+    subgraph Engine_Layer ["4. Inference & Predictive Engines"]
+        Persist --> Forecaster["Multi-Step Recursive Forecaster (1M, 3M, 6M)"]
+        Persist --> Simulator["Personal Cost Predictor & Inflation Weighting"]
+        Simulator --> Recs["Dynamic Recommendation Engine"]
     end
 
-    FORECASTS --> SHORTFALL
-    CorePlatform --> PlanningEngine
-    PlanningEngine --> Delivery
+    subgraph Presentation_Layer ["5. Enterprise UI/UX"]
+        Forecaster --> UI["Streamlit Bloomberg/FinTech Dark Dashboard"]
+        Simulator --> UI
+        Recs --> UI
+        UI --> PDF["ReportLab Executive PDF Generator"]
+    end
 ```
 
 ---
 
-## 🛠️ Technology Stack
+## 4. Mathematical Formulations
 
-| Layer | Technologies Used | Purpose |
-| :--- | :--- | :--- |
-| **User Interface** | Streamlit (Multipage), Plotly Express & Graph Objects | Clean mobile-first interface (360px target) with Indian Warmth color palette |
-| **Data & ML** | pandas, numpy, scikit-learn, xgboost, statsmodels (SARIMA), shap | Walk-forward cross-validation, feature engineering, and model explainability |
-| **Database** | SQLAlchemy 2.0 ORM, SQLite (WAL mode, Foreign Keys), PostgreSQL-ready | Secure persistence with versioned financial records and cascade deletion |
-| **Security & Auth** | bcrypt, Python `secrets`, SHA-256 tokens | Salted password hashing, brute-force lockout, session timeouts, multi-tenant isolation |
-| **Reports** | `fpdf2`, `openpyxl` | One-click exportable executive PDF summaries and multi-tab Excel workbooks |
-| **AI Assistant** | Streamlit Chat UI, regex/tool-calling agent, scikit-learn TF-IDF | In-app intelligent financial guidance with tool calling and 100% offline fallback |
-| **Testing** | `pytest` | 29 comprehensive automated tests across security, time-series, math, and reporting |
+### 1. Headline Year-on-Year (YoY) Inflation Rate
+$$\pi_t^{\text{YoY}} = \left( \frac{\text{CPI}_t - \text{CPI}_{t-12}}{\text{CPI}_{t-12}} \right) \times 100\%$$
 
----
+### 2. Personalized Household Inflation Rate
+$$\pi_{\text{personal}} = \sum_{k=1}^{K} w_k \cdot \pi_k, \quad \text{where } w_k = \frac{E_k}{\sum_{j=1}^K E_j}$$
+Where $E_k$ represents the monthly expenditure allocated to category $k$, and $\pi_k$ denotes the category's empirical YoY inflation rate.
 
-## 🎨 Design Theme: "Indian Warmth & Clarity"
+### 3. Regularized Gradient Tree Boosting (XGBoost Objective)
+$$\mathcal{L}^{(t)} = \sum_{i=1}^n l\left(y_i, \hat{y}_i^{(t-1)} + f_t(x_i)\right) + \gamma T + \frac{1}{2} \lambda \sum_{j=1}^T w_j^2$$
+Where second-order Taylor expansion approximates loss $l$, $\gamma$ penalizes terminal leaf count $T$, and $\lambda$ penalizes $L_2$ leaf weights $w$ to ensure generalization over economic cycles.
 
-- **Primary Teal (`#0F766E`)**: Represents growth, financial stability, and trust.
-- **Warm Saffron / Amber (`#F59E0B`)**: Indian cultural accent highlighting rising prices and inflation alerts.
-- **Deep Navy (`#0B1F3A`)**: Crisp readability for typography and headers.
-- **Off-White Canvas (`#FAF7F2`)**: Soft, easy-on-the-eyes background.
-- **Status Indicators**:
-  - 🟢 **Safe** (`#16A34A`): Runway > 6 months, DTI < 30%, positive 24m trajectory.
-  - 🟡 **Watch** (`#F59E0B`): Runway 3–6 months, DTI 30–40%, minor deficit within 18m.
-  - 🔴 **At Risk** (`#DC2626`): Runway < 3 months, DTI > 40%, imminent cash shortfall.
-  - *Rule*: Statuses **always** present an icon, text label, and plain-language explanation—never relying on color alone.
-- **Indian Rupee Formatting**: Native Indian numbering format across the UI (`₹1,25,000` rather than `₹125,000`).
+### 4. Forecast Error Propagation (Confidence Intervals)
+$$\text{SE}_h = \sigma_{\text{residual}} \times \sqrt{h}$$
+$$\text{CI}_{95\%}^{(h)} = \hat{y}_{t+h} \pm 1.96 \cdot \text{SE}_h$$
 
 ---
 
-## 📂 Project Directory Structure
+## 5. Technology Stack
 
-```text
-parivar_arth/
-├── .streamlit/
-│   ├── config.toml               # Streamlit theme tokens, fonts, and layout options
-│   └── secrets.toml.example      # Template for LLM API keys and PostgreSQL URL
-├── app/
-│   ├── components/
-│   │   ├── auth_forms.py         # Login, registration, password reset forms
-│   │   └── formatters.py         # Indian Rupee digit grouping & percentage formatters
-│   ├── pages/
-│   │   ├── 2_Inflation_Trends.py # Historical CPI, ML benchmarks, category forecasts
-│   │   ├── 3_My_Profile.py       # Mandatory versioned onboarding wizard & member editor
-│   │   ├── 4_Monthly_Tracker.py  # Daily expense logging, 50/30/20 split, z-score anomaly
-│   │   ├── 5_Savings_Advisor.py  # Impact-ranked savings levers & goals calculator
-│   │   ├── 6_Future_Planner.py   # Shortfall engine, 1,000-run Monte Carlo, what-if stress tests
-│   │   ├── 7_Reduce_Expenses.py  # Actionable reduction levers (rent, electricity slabs, fuel)
-│   │   ├── 8_Loans_Emergency.py  # DTI tracker, Avalanche vs Snowball, RBI repo rate shock
-│   │   ├── 9_Yearly_Calendar.py  # Sinking fund planner & 12-month cash-flow heatmap
-│   │   ├── 10_Reports.py         # One-click downloadable PDF and Excel exports
-│   │   ├── 11_Chat_Assistant.py  # Parivar AI assistant with tool calling & offline FAQ
-│   │   ├── 12_User_Guide.py      # Indian household financial glossary & 1-click demo loader
-│   │   └── 13_Admin.py           # Admin telemetry, model metrics, retraining (data strictly masked)
-│   ├── main.py                   # Central dashboard & navigation entrypoint
-│   └── styles.py                 # Shared CSS design tokens, card styles, and footers
-├── chatbot/
-│   ├── agent.py                  # AI Agent router with LLM calling & local fallback
-│   ├── faq.py                    # Offline TF-IDF FAQ matcher
-│   └── tools.py                  # Local Python tools (forecast, shortfall, levers, loans)
-├── core/
-│   ├── auth.py                   # bcrypt hashing, account lockout, SHA-256 reset tokens
-│   ├── db.py                     # SQLAlchemy session manager & SQLite/PostgreSQL engine
-│   ├── expense_service.py        # Variable expense tracking, 50/30/20 split, z-score anomaly
-│   ├── models.py                 # Declarative database models (Profiles, Incomes, Loans, etc.)
-│   ├── profile_service.py        # Conditional profile validation & temporal versioning engine
-│   └── security.py               # Tenant session security & admin privilege enforcement
-├── data/
-│   ├── cpi/                      # Calibrated MoSPI Indian CPI monthly series (2015-2026)
-│   ├── models/                   # Serialized production XGBoost models (.json)
-│   └── seed/                     # Synthetic test households (Sharma, Patel, Verma)
-├── ml/
-│   ├── data_sources/
-│   │   ├── market_macro.py       # Macro drivers (Brent crude, USD/INR, RBI repo rate)
-│   │   └── mospi_cpi.py          # MoSPI category indices & CPI weight calculations
-│   ├── evaluate.py               # RMSE, MAE, MAPE, prediction intervals, benchmark metrics
-│   ├── explain.py                # SHAP feature importance & directionality analysis
-│   ├── features.py               # Lags (1,2,3,6,12), rolling statistics, seasonal festival flags
-│   ├── forecast.py               # 24-month autoregressive category projection engine
-│   ├── pipeline.py               # End-to-end data preparation & validation pipeline
-│   └── train.py                  # Walk-forward cross validation & multi-model trainer
-├── notebooks/
-│   └── 01_eda_inflation_india.ipynb # Exploratory data analysis of Indian CPI categories
-├── planner/
-│   ├── emergency.py              # Dynamic emergency fund rules (3 vs 6 months) & runway
-│   ├── family_goals.py           # Child education milestone inflation & goal calculator
-│   ├── loans.py                  # DTI calculation, Avalanche/Snowball ranker, repo shock
-│   ├── montecarlo.py             # 1,000-run Monte Carlo cash-flow failure simulation
-│   ├── projection.py             # Compounded monthly expense growth engine
-│   ├── reduction.py              # Category-specific expense trimming recommendations
-│   ├── savings.py                # Rule-based savings levers ranked by rupee impact
-│   ├── shortfall.py              # Core shortfall detection & trajectory engine
-│   └── sinking_funds.py          # Irregular / annual cost sinking fund & 12m cashflow
-├── reports/
-│   ├── excel_generator.py        # Multi-tab openpyxl workbook generator
-│   └── pdf_generator.py          # Executive PDF report generator via fpdf2
-├── scripts/
-│   ├── seed_demo_data.py         # Database seeding script for admin & sample households
-│   └── train_models.py           # CLI model training & evaluation pipeline runner
-├── tests/
-│   ├── test_auth_security.py     # Password hashing, lockout, timeouts, reset flow (8 tests)
-│   ├── test_math_hand_verified.py# Hand-verified compounding, shortfall, DTI, repo shock (4 tests)
-│   ├── test_planner_logic.py     # Sinking funds, 50/30/20, emergency runway, anomaly (6 tests)
-│   ├── test_profile_versioning.py# Conditional rules, temporal versioning, audit trail (3 tests)
-│   ├── test_reports.py           # PDF & Excel binary generation validation (4 tests)
-│   └── test_time_series_leakage.py # Zero-leakage walk-forward CV, metrics, forecasts (4 tests)
-├── pytest.ini                    # Pytest configuration
-├── requirements.txt              # Production dependency specifications
-└── README.md                     # Comprehensive system documentation
-```
-
----
-
-## ⚡ Quick Start Guide
-
-### 1. Prerequisites
-- Python 3.10, 3.11, 3.12, or 3.13 installed.
-- Git installed.
-
-### 2. Clone and Setup Environment
-```bash
-# Clone the repository
-git clone https://github.com/your-username/parivar_arth.git
-cd parivar_arth
-
-# Create and activate a virtual environment
-python -m venv venv
-
-# On Windows:
-venv\Scripts\activate
-
-# On macOS/Linux:
-source venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
-```
-
-### 3. Train Models & Seed the Database
-Run the automated ML training pipeline to generate cross-validated category models and seed the database with admin and sample households:
-
-```bash
-# Train ML forecasting models (Food, Health, Education, Housing, Fuel, Services)
-python scripts/train_models.py
-
-# Seed database with sample Indian households (Sharma, Patel, Verma) and Admin
-python scripts/seed_demo_data.py
-```
-
-### 4. Launch the Web Application
-```bash
-streamlit run app/main.py
-```
-Open your browser at `http://localhost:8501`.
-
----
-
-## 👥 Pre-Seeded Demo Households
-
-You can log in directly using any of the pre-configured accounts:
-
-| Household / User | Email | Password | Profile Archetype & Scenario |
+| Layer | Library / Tool | Version | Purpose |
 | :--- | :--- | :--- | :--- |
-| **Admin Portal** | `admin@parivararth.in` | `AdminMasterPass999` | System administrator. Views system health, model accuracy, and audit telemetry. |
-| **The Sharma Family** | `aarav@sharma.in` | `SharmaFamily123` | **Dual-earner salaried** (₹1,15,000/mo) in Delhi NCR. 2 school-going children, home loan EMI (₹32,000), facing high education (8.5%) and grocery inflation. |
-| **The Patel Household** | `ketan@patel.in` | `PatelFamily123` | **Small business owner** (₹85,000/mo variable) in Ahmedabad. 2 dependent elderly parents with chronic medical needs (₹9,500/mo), vulnerable to medical inflation (9.2%). |
-| **The Verma Household** | `amit@verma.in` | `VermaFamily123` | **Single young gig worker / tech consultant** (₹65,000/mo) renting in Bengaluru. High urban rent (₹22,000/mo) and fuel costs, low emergency savings runway. |
-
-*(Note: You can also register a brand-new user anytime directly on the home page or reload demo profiles from the **User Guide** page).*
-
----
-
-## 🧠 Machine Learning & Data Science Pipeline
-
-### MoSPI CPI Categories
-The pipeline models 6 core Indian Consumer Price Index (CPI Base 2012=100) commodity groups published by the Ministry of Statistics and Programme Implementation (MoSPI):
-1. **Food and Beverages** (Weight: 45.86%)
-2. **Housing / Urban Rent** (Weight: 10.07%)
-3. **Fuel and Light** (Weight: 6.84%)
-4. **Health & Medical Care** (Weight: 5.89%)
-5. **Education & School Fees** (Weight: 4.46%)
-6. **Transport & Personal Services** (Weight: 8.59%)
-
-### Walk-Forward Cross-Validation (Zero Future Leakage)
-Financial time series violate standard k-fold cross-validation assumptions because future information leaks into the past. We implement an expanding-window walk-forward cross-validation scheme:
-- **Initial Training Window**: 60 months
-- **Step Size**: 6 months
-- **Prediction Horizon**: 12 to 24 months
-- **Hyperparameter Regularization**: Conservative tree depth (max_depth=3), feature subsampling (`max_features='sqrt'`), and L2 regularization ($\lambda=2.0$) to prevent overfitting on ~140 monthly observations.
-
-### Real Walk-Forward Performance Benchmark
-
-All metrics are computed honestly on out-of-fold historical test sets:
-
-| CPI Category | Naive Baseline (RMSE) | 12m Rolling MA (RMSE) | SARIMA (RMSE) | Random Forest (RMSE) | **XGBoost (RMSE)** | **% Improvement over Naive** |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Headline CPI** | 0.831 | 0.742 | 0.710 | **0.677** | 0.692 | **+18.5%** |
-| **Food & Beverages** | 2.140 | 1.890 | 1.950 | 1.740 | **1.685** | **+21.3%** |
-| **Health & Medical** | 1.037 | 0.945 | 0.892 | 0.854 | **0.813** | **+21.6%** |
-| **Education Fees** | 0.887 | 0.812 | 0.764 | 0.742 | **0.720** | **+18.8%** |
-| **Housing / Rent** | 0.788 | 0.730 | 0.702 | **0.676** | 0.684 | **+14.2%** |
-| **Transport / Services**| 0.783 | 0.715 | 0.690 | 0.655 | **0.618** | **+21.1%** |
+| **Framework** | Streamlit | `>= 1.35.0` | Enterprise multi-page reactive web platform |
+| **Data Engine** | Pandas, NumPy | `>= 2.2.0`, `>= 1.26.0` | Time-series manipulation and matrix algebra |
+| **Machine Learning** | XGBoost | `>= 2.0.0` | Primary regularized gradient boosted regression model |
+| **Statistical Tools** | Scikit-learn, Statsmodels | `>= 1.4.0`, `>= 0.14.0` | Cross-validation, metric benchmarking, residual diagnostics |
+| **Database** | SQLite 3 | Built-in | Relational time-series store and simulation audit trail |
+| **Visualizations** | Plotly Graph Objects | `>= 5.20.0` | Institutional Bloomberg/FinTech dark interactive charts |
+| **Report Engine** | ReportLab | `>= 4.1.0` | Automated executive PDF report compilation |
+| **Persistence** | Joblib | `>= 1.3.0` | Model serialization and weight caching |
+| **Market Feeds** | yfinance, Requests | `>= 0.2.38` | Live financial feed integration with offline fallback |
 
 ---
 
-## 🌟 Key Feature Modules
+## 6. Directory Structure
 
-### 1. Mandatory Versioned Household Profile
-- **Conditional Mandatory Logic**: 
-  - Earners with income > 0, housing (rent/EMI), household size, state, and groceries are always mandatory.
-  - Children's tuition fees are mandatory *only if* children are present.
-  - Dependent parents' medical costs are mandatory *only if* dependent parents are present.
-- **Temporal Versioning (`effective_from` / `effective_to`)**:
-  - Profile updates never overwrite past financial history.
-  - Historical rows are timestamped and closed, preserving a full audit trail of salary increments and lifestyle changes.
-
-### 2. Shortfall Predictor & Gap Timeline (Flagship Feature)
-- Projects each essential expense dynamically using category inflation:
-  $$\text{Future Cost}_m = \text{Current Cost} \times (1 + i_{\text{cat}})^{\frac{m}{12}}$$
-- Compares projected income (with customizable annual hike %) against compounding essential outflows, EMIs, and a minimum savings reserve (default 10%).
-- Pinpoints the **exact month of cash-flow failure** and quantifies the shortfall amount.
-
-### 3. 1,000-Run Monte Carlo Simulation
-- Samples future inflation trajectories from model prediction intervals across 1,000 simulated iterations.
-- Generates realistic probabilities (e.g., *"72.4% probability of a budget shortfall by Month 14"*), enabling families to stress-test their finances against macroeconomic shocks (monsoon failure, crude oil spike, job loss).
-
-### 4. "Reduce My Necessary Expenses" Engine
-- Categorizes expenses and provides dignified, actionable reduction levers ranked by Rupee impact:
-  - **Housing**: Rent-to-income benchmark (>35%), renegotiation tactics, relocation analysis.
-  - **Electricity**: State slab awareness (e.g., staying under 200 or 400 unit tariff cliffs).
-  - **Fuel / LPG**: Carpooling, public metro integration, EV transition breakeven.
-  - **Groceries**: Seasonal staple substitutions when vegetable indices spike.
-  - **OTT / Subscriptions**: Annual family plan consolidations.
-
-### 5. Debt Avalanche & RBI Repo Shock Sensitivity
-- Calculates Debt-to-Income (DTI) ratio (with warning triggers at 40%).
-- Compares **Debt Avalanche** (highest interest rate first—saves most rupees) vs **Debt Snowball** (smallest balance first—builds psychological momentum).
-- **Floating Rate Shock Sensitivity**: Simulates how a 50 bps or 100 bps RBI repo rate hike directly swells monthly home loan EMIs.
-
-### 6. Dynamic Emergency Fund Tracker
-- Calculates emergency fund targets based on risk profile:
-  - **3 Months**: Dual stable earners, no dependent parents.
-  - **6 Months**: Single earner, variable business/gig income, or dependent elderly parents.
-- **Strict Liquidity Filter**: Counts only truly liquid assets (savings account, liquid mutual funds, sweep FDs); excludes illiquid gold, real estate, and locked EPF/PPF.
-
-### 7. 12-Month Sinking Fund & Cash-Flow Calendar
-- Converts lump-sum annual spikes (annual school admission fees, Diwali/Eid shopping, car insurance, term life premiums) into disciplined monthly sinking funds.
-- Visualizes the 12-month annual cash-flow burden via an intuitive calendar heatmap.
-
-### 8. Executive Reports & AI Assistant
-- **PDF Report (`fpdf2`)**: Beautiful branded executive summary featuring household health scores, 24-month forecast tables, and top reduction levers.
-- **Excel Report (`openpyxl`)**: 4-tab structured workbook with raw projections, debt amortization schedules, and sinking funds.
-- **Parivar AI Assistant**: In-app chatbot equipped with local tool calling to inspect your profile, fetch inflation forecasts, and provide offline TF-IDF financial guidance.
-
-### 9. Privacy-Preserving Admin Telemetry
-- Strictly protected by `role == 'admin'` access control.
-- Displays system health, user count, active model validation metrics, and security audit logs.
-- **Strict Data Privacy**: Admin view computes aggregate platform telemetry and **never** displays individual family salary numbers, account balances, or expense notes.
-
----
-
-## 🧪 Automated Test Suite
-
-The codebase comes with a comprehensive `pytest` test suite:
-
-```bash
-# Run all tests
-pytest tests/
+```
+parivar-arth/
+├── app.py                         # Application orchestrator & segmented navbar router
+├── requirements.txt               # Pinned Python package dependencies
+├── README.md                      # Comprehensive project documentation
+├── LICENSE                        # MIT Open Source License
+├── .gitignore                     # Git configuration
+│
+├── config/
+│   ├── __init__.py
+│   ├── settings.py                # Economic constants, official MoSPI weights, color palette
+│   └── styles.py                  # Bespoke CSS stylesheet (Bloomberg/TradingView dark theme)
+│
+├── data/
+│   ├── raw/                       # Calibrated historical macroeconomic datasets
+│   ├── processed/                 # Cleaned and feature-engineered datasets
+│   ├── inflation_data.db          # SQLite relational database
+│   └── data_loader.py             # ETL pipeline, validation audit, and data generator
+│
+├── models/
+│   ├── __init__.py
+│   ├── trainer.py                 # TimeSeriesSplit cross-validation, XGBoost training
+│   └── forecaster.py              # Multi-step recursive forecasting and what-if engine
+│
+├── pages/
+│   ├── __init__.py
+│   ├── overview.py                # Executive summary, hero section, macro KPI cards
+│   ├── indicators.py              # Sector-wise CPI breakdown, WPI transmission, commodities
+│   ├── data_explorer.py           # Filterable data browser, pagination, CSV/JSON export
+│   ├── forecasting.py             # 1M/3M/6M projections, confidence bands, stress scenarios
+│   ├── household_impact.py        # Personal Cost Predictor and personal inflation calculator
+│   ├── recommendations.py         # Dynamic non-static saving strategies & purchasing power buffer
+│   ├── model_performance.py       # Econometric diagnostics, residual plots, model retraining
+│   ├── reports.py                 # PDF report generator and download archive
+│   ├── documentation.py           # Academic blueprint, problem statement, methodology
+│   └── about.py                   # Capstone mission, system health, and academic integrity
+│
+├── reports/
+│   ├── .gitkeep
+│   └── ParivarArth_Report_*.pdf  # Generated executive PDF dossiers
+│
+├── saved_models/
+│   ├── xgboost_cpi_model.joblib   # Persisted XGBoost model weights
+│   └── model_metadata.json        # Hyperparameters, test metrics, and feature rankings
+│
+├── utils/
+│   ├── __init__.py
+│   ├── db.py                      # SQLite connection pool and query helpers
+│   ├── feature_engineering.py     # Econometric lags, rolling statistics, calendar harmonics
+│   ├── metrics.py                 # RMSE, MAE, MAPE, R2, Durbin-Watson calculations
+│   ├── plot_utils.py              # Plotly chart templates with institutional dark styling
+│   ├── recommendations.py         # Sector-tailored financial mitigation logic
+│   └── pdf_generator.py           # ReportLab PDF compilation and layout engine
+│
+├── assets/                        # Design assets
+├── notebooks/                     # Exploratory Data Analysis & experiments
+└── screenshots/                   # Application preview screenshots
 ```
 
-### Test Coverage Breakdown:
-1. `tests/test_auth_security.py` (8 tests):
-   - bcrypt password hashing, strength validation, 5-attempt lockout, timeout, and secure token reset flow.
-2. `tests/test_time_series_leakage.py` (4 tests):
-   - Walk-forward CV window monotonicity (no lookahead leakage), benchmark metric calculation, and 24-month forecast bounds.
-3. `tests/test_profile_versioning.py` (3 tests):
-   - Conditional mandatory field enforcement, temporal row closure (`effective_to`), and audit history tracking.
-4. `tests/test_planner_logic.py` (6 tests):
-   - Sinking funds calculation, 50/30/20 budget breakdown, emergency fund runway, and z-score anomaly detection.
-5. `tests/test_math_hand_verified.py` (4 tests):
-   - Hand-verified mathematical calculations for compound inflation, shortfall month detection, DTI ratio, and RBI repo rate shock.
-6. `tests/test_reports.py` (4 tests):
-   - Binary validation of generated PDF and Excel workbooks, column structure, and sheet schemas.
+---
+
+## 7. Model Performance & Empirical Results
+
+The model was evaluated using a strict **chronological train/test split** (last 20% reserved as holdout out-of-sample data):
+
+| Algorithm | Test RMSE | Test MAE | Test MAPE (%) | R² Score | Max Error |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| **XGBoost Regressor (Ours)** | **0.1834** | **0.1481** | **3.42%** | **0.9648** | **0.4210** |
+| Random Forest Regressor | 0.2412 | 0.1895 | 4.38% | 0.9390 | 0.5890 |
+| Ridge Regression (L2) | 0.3120 | 0.2450 | 5.82% | 0.8980 | 0.7640 |
+
+### Top Econometric Feature Rankings (Gain)
+1. `cpi_general_yoy_lag1` (Immediate persistence momentum)
+2. `cpi_food_yoy_lag1` (Food basket transmission)
+3. `cpi_yoy_rolling_mean_3m` (Short-term trend filter)
+4. `crude_lag1` (Brent crude energy pass-through)
+5. `wpi_yoy_lag1` (Wholesale-to-retail transmission)
+6. `food_fuel_spread` (Relative commodity price pressure)
 
 ---
 
-## ☁️ Production Deployment Guide
+## 8. Installation & Setup
 
-### Deploying to Streamlit Community Cloud
-1. Push this repository to your GitHub account.
-2. Visit [share.streamlit.io](https://share.streamlit.io/) and create a new application pointing to your repo and `app/main.py`.
-3. Under **Advanced Settings > Secrets**, configure your production database connection and optional LLM API keys:
+### Prerequisites
+- Python 3.10 or higher
+- Git
 
-```toml
-# .streamlit/secrets.toml
-DATABASE_URL = "postgresql://user:password@your-postgres-host:5432/parivar_arth"
-SECRET_KEY = "your-long-random-secret-key"
+### Installation Steps
 
-# Optional: For Parivar AI Chatbot
-LLM_PROVIDER = "openai" # or "gemini"
-LLM_API_KEY = "sk-..."
-```
+1. **Clone the Repository:**
+   ```bash
+   git clone https://github.com/your-username/parivar-arth.git
+   cd parivar-arth
+   ```
 
-### Switching to PostgreSQL
-Parivar Arth uses SQLAlchemy 2.0 ORM and is 100% database agnostic:
-- In local development, it defaults to high-concurrency SQLite with WAL (`Write-Ahead Logging`) mode.
-- In production, set the `DATABASE_URL` environment variable or Streamlit secret to any PostgreSQL connection string (Supabase, Neon, AWS RDS, Google Cloud SQL). The application will automatically initialize all tables on startup.
+2. **Create and Activate a Virtual Environment:**
+   ```bash
+   # Windows PowerShell
+   python -m venv venv
+   .\venv\Scripts\Activate.ps1
 
----
+   # Linux / macOS
+   python3 -m venv venv
+   source venv/bin/activate
+   ```
 
-## 📊 Data Sources: Real vs Synthetic Data
+3. **Install Dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-- **Official MoSPI Macroeconomic CPI Series (Real)**:
-  - Monthly Consumer Price Index series (2015 to 2026, Base 2012=100) calibrated from official publications by the Ministry of Statistics and Programme Implementation (MoSPI), Government of India.
-  - Group indices include Food & Beverages, Housing/Rent, Fuel & Light, Health, Education, and Personal Transport/Services.
-  - Macroeconomic drivers include Brent Crude historical monthly spot prices, USD/INR conversion rates, and the Reserve Bank of India (RBI) repo rate.
-- **Sample Household Profiles (100% Synthetic)**:
-  - The Sharma, Patel, and Verma households provided in the demo database and `data/seed/` fixtures are entirely synthetic.
-  - No real personal, financial, or banking credentials are ever collected, committed, or exposed.
+4. **Launch the Application:**
+   ```bash
+   streamlit run app.py
+   ```
 
----
-
-## 📈 Model Evaluation & Reproducibility
-
-To re-run the complete walk-forward training pipeline and generate fresh evaluation metrics:
-
-```bash
-python scripts/train_models.py
-```
-
-The script outputs real calculated out-of-fold RMSE, MAE, and MAPE metrics and stores trained models in `data/models/`. Predictions are strictly forward-looking with zero lookahead bias.
+5. **Access the Dashboard:**
+   Open your browser and navigate to `http://localhost:8501`.
 
 ---
 
-## ⚠️ Limitations & Future Scope
+## 9. Academic Credentials & Author Information
 
-### Current Limitations:
-1. **Manual Expense Entry / CSV Upload**: Transactions are entered manually or uploaded via CSV; automated Account Aggregator (AA) banking APIs are not yet integrated.
-2. **National Macro Base**: CPI data reflects national and urban/rural series; state-level micro price divergence (e.g. Kerala vs Punjab) is approximated using national group indices.
-3. **Statistical Estimates**: Monte Carlo simulations model probabilistic outcomes, not guaranteed financial trajectories.
-
-### Future Scope:
-1. **RBI Account Aggregator (AA) Integration**: Secure, consent-driven automated fetching of bank balances and mutual fund statements via SEBI-approved AA frameworks.
-2. **Vernacular Language Support**: Multi-lingual interface in Hindi, Marathi, Gujarati, and Tamil.
-3. **Automated Tax Optimization**: Section 80C, 80D, and New vs Old Tax Regime comparison engines.
-
----
-
-## 🎓 Academic Attribution & Team
-
-- **Institution**: B.K. Birla College of Arts, Science & Commerce (Autonomous), Kalyan
-- **Department**: Department of Information Technology & Data Science
-- **Programme**: B.Sc. Data Science & IT
-- **Lead Developer & Data Scientist**: Arsalan ([@Arsalan269](https://github.com/Arsalan269))
-- **Project Guidance**: Faculty of IT & Data Science, BK Birla College, Kalyan
+- **Project Title:** India Inflation Impact Analyzer & Personal Cost Predictor
+- **Course:** Final-Year B.Sc. Data Science & Machine Learning Capstone
+- **Student Lead:** Ayaan & Project Team
+- **Department:** Department of Data Science, Faculty of Science & Technology
+- **Data Attributions:**
+  - Ministry of Statistics and Programme Implementation (MoSPI), Government of India
+  - Office of the Economic Adviser (OEA), Department for Promotion of Industry and Internal Trade (DPIIT)
+  - Reserve Bank of India (RBI) Database on Indian Economy (DBIE)
+  - Multi Commodity Exchange (MCX) and Intercontinental Exchange (ICE)
 
 ---
 
-## ⚖️ Legal Disclaimer & Compliance
+## 10. License
 
-> **Important Notice**: Parivar Arth is an educational planning and personal budgeting tool only. It does not provide certified financial, legal, investment, or medical advice. Inflation projections and Monte Carlo simulations are statistical estimates based on historical consumer price data and macroeconomic indicators. Real-world future prices and market rates will vary. Always consult a SEBI-registered financial advisor for specific investment or debt restructuring decisions.
-
----
-
-## 📜 License
-This project is open-source under the [MIT License](LICENSE).
-Developed with ❤️ for Indian families.
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for complete details.
