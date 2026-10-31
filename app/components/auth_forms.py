@@ -6,12 +6,39 @@ Login, Register (with consent & privacy disclaimer), Password Reset, and Account
 import time
 import streamlit as st
 from core.db import get_db_session
+from core.models import User
 from core.auth import (
     authenticate_user, register_user, create_password_reset_token,
     verify_and_reset_password, delete_user_account
 )
 from core.security import touch_session
 from app.styles import PRIMARY_TEAL, ACCENT_SAFFRON, TEXT_NAVY
+
+
+def auto_login_demo(email: str):
+    """Auto-login as pre-seeded demo household with full dataset loaded."""
+    with get_db_session() as db:
+        user = db.query(User).filter(User.email == email).first()
+        if not user:
+            try:
+                from scripts.seed_demo_data import seed_database
+                seed_database()
+                user = db.query(User).filter(User.email == email).first()
+            except Exception:
+                pass
+        if user:
+            st.session_state["user"] = {
+                "user_id": user.user_id,
+                "name": user.name,
+                "email": user.email,
+                "role": user.role
+            }
+            touch_session()
+            st.success(f"Namaste! Signed in as {user.name}...")
+            time.sleep(0.3)
+            st.rerun()
+        else:
+            st.error(f"Demo profile {email} not found. Please click 'Create Household Account'.")
 
 
 def render_auth_tabs():
@@ -29,6 +56,31 @@ def render_auth_tabs():
             """,
             unsafe_allow_html=True
         )
+
+        # 1-Click Demo Buttons for Viva & Presentation
+        st.markdown(
+            f"""
+            <div style="background-color: #FEF3C7; border: 1px solid #FDE68A; border-left: 5px solid {ACCENT_SAFFRON}; padding: 10px 14px; border-radius: 8px; margin-bottom: 1rem;">
+                <strong style="color: #92400E; font-size: 0.9rem;">⚡ 1-Click Instant Demo Login (For Examiners / Viva):</strong><br>
+                <span style="font-size: 0.8rem; color: #78350F;">
+                Skip manual typing. Click any household below to instantly sign in with full financial data loaded:
+                </span>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+        col_d1, col_d2, col_d3 = st.columns(3)
+        with col_d1:
+            if st.button("👨‍👩‍👧 Sharma Family\n(Salaried Couple)", use_container_width=True):
+                auto_login_demo("aarav@sharma.in")
+        with col_d2:
+            if st.button("🏪 Patel Household\n(Small Business)", use_container_width=True):
+                auto_login_demo("ketan@patel.in")
+        with col_d3:
+            if st.button("💻 Verma Household\n(Gig Worker)", use_container_width=True):
+                auto_login_demo("amit@verma.in")
+
+        st.markdown("<div style='text-align: center; color: #94A3B8; margin: 12px 0; font-size: 0.8rem;'>— OR SIGN IN MANUALLY —</div>", unsafe_allow_html=True)
 
         with st.form("login_form", clear_on_submit=False):
             email = st.text_input("Email Address", placeholder="name@example.com", help="Your registered email address.")
