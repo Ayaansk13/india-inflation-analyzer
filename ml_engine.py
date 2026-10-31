@@ -243,3 +243,85 @@ def get_all_category_forecasts():
                 "r2": 0.85
             }
     return forecasts
+
+
+def get_model_benchmarks(category="Food and Beverages"):
+    """
+    Benchmark multiple algorithms on the out-of-sample test set:
+    1. Naive Baseline (Last month persistence)
+    2. 3-Month Moving Average
+    3. Linear Regression (Ordinary Least Squares)
+    4. XGBoost Regressor
+    Returns an academic comparison metrics table.
+    """
+    df = load_cpi_data()
+    df_feat, feature_cols = prepare_features(df[category], df["date"])
+    
+    test_size = 12
+    train_df = df_feat.iloc[:-test_size].copy()
+    test_df = df_feat.iloc[-test_size:].copy()
+    
+    y_test = test_df["y"].values
+    
+    # 1. Naive Baseline
+    pred_naive = test_df["lag_1"].values
+    rmse_naive = root_mean_squared_error(y_test, pred_naive)
+    mae_naive = mean_absolute_error(y_test, pred_naive)
+    r2_naive = r2_score(y_test, pred_naive)
+    
+    # 2. 3-Month Moving Average
+    pred_ma = test_df["rolling_mean_3"].values
+    rmse_ma = root_mean_squared_error(y_test, pred_ma)
+    mae_ma = mean_absolute_error(y_test, pred_ma)
+    r2_ma = r2_score(y_test, pred_ma)
+    
+    # 3. Linear Regression (OLS)
+    X_train_mat = np.hstack([np.ones((len(train_df), 1)), train_df[feature_cols].values])
+    X_test_mat = np.hstack([np.ones((len(test_df), 1)), test_df[feature_cols].values])
+    w_lin = np.linalg.pinv(X_train_mat) @ train_df["y"].values
+    pred_lin = X_test_mat @ w_lin
+    rmse_lin = root_mean_squared_error(y_test, pred_lin)
+    mae_lin = mean_absolute_error(y_test, pred_lin)
+    r2_lin = r2_score(y_test, pred_lin)
+    
+    # 4. XGBoost Regressor
+    xgb_res = train_and_evaluate(category)
+    rmse_xgb = xgb_res["rmse"]
+    mae_xgb = xgb_res["mae"]
+    r2_xgb = xgb_res["r2"]
+    
+    pct_imp = ((rmse_naive - rmse_xgb) / rmse_naive * 100) if rmse_naive > 0 else 0
+    pct_imp_str = f"Best: {pct_imp:+.1f}% vs Baseline"
+    
+    benchmark_data = [
+        {
+            "Model Algorithm": "1. Naive Baseline (Last Month)",
+            "RMSE": round(rmse_naive, 3),
+            "MAE": round(mae_naive, 3),
+            "R² Score": round(r2_naive, 3),
+            "Performance": "Baseline Reference"
+        },
+        {
+            "Model Algorithm": "2. 3-Month Moving Average",
+            "RMSE": round(rmse_ma, 3),
+            "MAE": round(mae_ma, 3),
+            "R² Score": round(r2_ma, 3),
+            "Performance": f"{((rmse_naive - rmse_ma) / rmse_naive * 100):+.1f}% error change"
+        },
+        {
+            "Model Algorithm": "3. Linear Regression (OLS)",
+            "RMSE": round(rmse_lin, 3),
+            "MAE": round(mae_lin, 3),
+            "R² Score": round(r2_lin, 3),
+            "Performance": f"{((rmse_naive - rmse_lin) / rmse_naive * 100):+.1f}% error change"
+        },
+        {
+            "Model Algorithm": "4. XGBoost Regressor (Champion)",
+            "RMSE": round(rmse_xgb, 3),
+            "MAE": round(mae_xgb, 3),
+            "R² Score": round(r2_xgb, 3),
+            "Performance": pct_imp_str
+        }
+    ]
+    return pd.DataFrame(benchmark_data)
+
